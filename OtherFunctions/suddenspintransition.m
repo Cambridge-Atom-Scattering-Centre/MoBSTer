@@ -50,14 +50,16 @@ oldBSF = (Rspinframe'*(oldB)')';
 newBSF = (Rspinframe'*(newB)')';
 %Convert old field directions to spin frame
 
-n = cross(oldBSF,newBSF);
+if abs(dot(oldB,newB))==1
+%If the new and old magnetic fields are along the same line, their cross product is meaningless
+    n = spinx;
+else
+    n = cross(oldBSF,newBSF);
+    n = n/norm(n);
+end
 theta = acos(dot(newBSF,oldBSF));
-phix = -theta*n(1);
-phiy = -theta*n(2);
 
-Rx = [cos(phix/2) -1i*sin(phix/2); -1i*sin(phix/2) cos(phix/2)];
-Ry = [cos(phiy/2) -sin(phiy/2); sin(phiy/2) cos(phiy/2)];
-
-Rspin = Rx*Ry; %generate spin rotation matrix in spin frame
+sigmax = [0,1;1,0]; sigmay = [0,-1i;1i,0];%Pauli matrices
+Rspin = expm(0.5*1i*theta*(sigmax*n(1)+sigmay*n(2)));%Spin rotation matrix
 newspin = (Rspin*spin')';%Find the new spin!
 end
